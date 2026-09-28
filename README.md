@@ -20,6 +20,10 @@ VoxelCdx is free for modelling, painting and static export. **Pro** (rigging, an
 macOS: the app is not notarized by Apple yet — on the first launch open System Settings → Privacy & Security and press **Open Anyway**.
 Linux: unzip and run `./VoxelCdx` (run `chmod +x VoxelCdx` if your unzip tool drops the permission).
 
+## File format
+
+The `.vcdx` project format is documented in [docs/vcdx-format.md](docs/vcdx-format.md) — free to use for importers and converters.
+
 ## Support
 
 Discord: `sazixt`, `mercenarytf` · Telegram: [@szxqpi](https://t.me/szxqpi) · Email: sazix1337@gmail.com
