@@ -22,6 +22,6 @@ Linux: unzip and run `./VoxelCdx` (run `chmod +x VoxelCdx` if your unzip tool dr
 
 ## Support
 
-Discord: `sazixt` · Telegram: [@szxqpi](https://t.me/szxqpi) · Email: sazix1337@gmail.com
+Discord: `sazixt`, `mercenarytf` · Telegram: [@szxqpi](https://t.me/szxqpi) · Email: sazix1337@gmail.com
 
 This repository only hosts the released builds.
