@@ -22,7 +22,7 @@ Linux: unzip and run `./VoxelCdx` (run `chmod +x VoxelCdx` if your unzip tool dr
 
 ## File format
 
-The `.vcdx` project format is documented in [docs/vcdx-format.md](docs/vcdx-format.md) — free to use for importers and converters.
+How `.vcdx` files are laid out: [docs/vcdx-format.md](docs/vcdx-format.md). Use it for importers / converters however you like.
 
 ## Support
 
