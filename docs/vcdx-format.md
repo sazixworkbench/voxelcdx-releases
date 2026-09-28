@@ -1,6 +1,6 @@
 # .vcdx file format
 
-This is the project file of [VoxelCdx](https://voxelcdx.pages.dev), format version 10 (app 1.1.x). Wrote this up for people making importers / converters. If the doc and the app disagree, the app wins and the doc has a bug, so let us know.
+This is the project file of [VoxelCdx](https://voxelcdx.pages.dev), format version 11 (app 1.1.5+). Wrote this up for people making importers / converters. If the doc and the app disagree, the app wins and the doc has a bug, so let us know.
 
 ## Basics
 
@@ -24,7 +24,7 @@ When we import a .vox, colour index N stays N, so a straight index copy works bo
 
 ```
 char[4]  magic = "VCDX"
-i32      version                  // 10 right now, refuse anything newer than you know
+i32      version                  // 11 right now, refuse anything newer than you know
 string   info                     // v4+, small json, see below
 i32      thumbnailLength          // v4+, can be 0
 u8[]     thumbnail                // png, 192x192, preview of the active model
@@ -177,6 +177,7 @@ Track {
     string bone
     i32    keyCount
     Key    keys[keyCount]         // sorted by frame
+    bool   scaleChildren          // v11+, see posing below. false = scale stays on this bone
 }
 
 Key {
@@ -184,20 +185,27 @@ Key {
     f32  rotation[4]              // quaternion x y z w, local, around the bone head
     vec3 translation              // local offset, voxel units
     u8   interpolation            // easing towards the NEXT key, see below
+    vec3 scale                    // v11+, around the bone head, (1, 1, 1) = none
 }
 ```
 
 Interpolation: `0` linear, `1` smooth (smoothstep), `2` step, `3` ease in (cubic), `4` ease out (cubic), `5` back, `6` elastic, `7` bounce.
 
-Between two keys the eased factor comes from the first key, rotation is slerped and translation lerped. Before the first key / after the last one the pose just holds. Bones without a track stay in rest pose.
+Between two keys the eased factor comes from the first key, rotation is slerped, translation and scale lerped. Before the first key / after the last one the pose just holds. Bones without a track stay in rest pose. Files older than v11 have no scale, treat it as (1, 1, 1).
 
 Posing, row vectors (`point * matrix`, like System.Numerics):
 
 ```
-M(bone) = T(-head) * R(rotation) * T(head + translation) * M(parent)
+M(bone) = T(-head) * S(scale) * R(rotation) * T(head + translation) * B(parent)
+P(bone) = T(-head) *            R(rotation) * T(head + translation) * B(parent)
+
+B(parent) = M(parent)   if the parent's scale is (1, 1, 1) or its track has scaleChildren
+            P(parent)   otherwise
 ```
 
-Root bones use identity for `M(parent)`. A vertex `v` bound to the bone ends up at `v * M(bone)`.
+Root bones use identity for `B(parent)`. A vertex `v` bound to the bone ends up at `v * M(bone)`. `P` is the same thing without the bone's own scale, it's what children follow when the scale is meant for that one bone only (a fat pelvis with normal legs). Without any scale `M = P` and it's the old v10 formula.
+
+Our glTF / FBX exports bake this into plain TRS nodes per frame. A bone that is scaled on its own and has children gets an extra child `<name>_scale` that carries the scale and the bone's voxels, so engines where scale always goes to the children still show the same thing.
 
 ### Colours, attachments, links
 
@@ -231,7 +239,7 @@ Links are how character variants share the base model's animations. The clip dat
 
 Minimum the app will open:
 
-- `VCDX`, version 10, the info json, thumbnail length 0
+- `VCDX`, version 11, the info json, thumbnail length 0
 - then brotli of:
   - `1024`, 1024 slots (unused ones can be `0,0,0,255`, diffuse, roughness 0.8, metallic 1, emission 0, ior 1.5, transparency 0.9, which are the app's defaults), 64 rows of `""` / `false`
   - `"{}"` for render settings, `0` pages, active page `0`
@@ -248,6 +256,7 @@ A model without a rig still needs the whole rig block: 0 bones, per layer an emp
 - 8: attachment pose
 - 9: favourites, animation source, linked clips
 - 10: per-bone / timing overrides on linked clips
+- 11: bone scale in keys, scaleChildren per track
 
 1 to 3 were pre-release (single model, 256 colours, 8-bit voxels, no header) and aren't documented. You won't run into them.
 
