@@ -62,7 +62,7 @@ Palette {
 }
 
 Slot {
-    u8  r, g, b, a
+    u8  r, g, b, a                // a = 0 on slots 1+ means "not added yet" (an empty, growing page); draw it opaque if you meet it
     u8  material                  // 0 diffuse, 1 metal, 2 emissive, 3 glass
     f32 roughness                 // 0..1
     f32 metallic                  // 0..1, only used by metal
@@ -81,6 +81,8 @@ Page {
     Palette palette
 }
 ```
+
+The render settings json is optional data for the app's own renderer: lights, camera, background (`"Sky"`, `"SolidColor"`, `"Transparent"`, `"Gradient"`, `"Image"`), quality, and the reference pictures the user models over (`References`, with the picture file bytes in base64). Readers can skip the whole string; none of it changes the model.
 
 ### Models and layers
 
